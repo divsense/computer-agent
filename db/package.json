@@ -1,0 +1,12 @@
+{
+  "name": "alien-db",
+  "version": "0.0.1",
+  "description": "Alien DB",
+  "main": "save.js",
+  "author": "Divsense",
+  "license": "ISC",
+  "dependencies": {
+    "nedb": "latest",
+    "minimist": "latest"
+	}
+}
