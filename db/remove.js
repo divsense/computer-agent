@@ -20,7 +20,6 @@ if( !nodeid ){
 
 }
 
-
 var db = new Datastore({filename: dbpath});
 
 db.loadDatabase(function(err){
@@ -30,10 +29,12 @@ db.loadDatabase(function(err){
 		process.exit(9);
 	}
 
-	db.remove({_id: nodeid}, {}, function(err){
+	db.remove({_id: nodeid}, {}, function(err, cnt){
 		if( err ){
 			process.stderr.write(JSON.stringify(err));
 			process.exit(9);
 		}
+		var res = "Node (_id: " + nodeid + ") removed: " + cnt;
+		process.stdout.write( res );
 	});
 });
