@@ -20,53 +20,20 @@ if( !nodeid ){
 
 }
 
-process.stdin.setEncoding('utf8');
 
-var data = "";
+var db = new Datastore({filename: dbpath});
 
-process.stdin.on("readable", function(){
-	var chunk = process.stdin.read();
-	if( chunk ){
-		data += chunk;
-	}
-});
+db.loadDatabase(function(err){
 
-process.stdin.on("end", function(){
-
-	var json_data;
-
-	if( !data ){
-		process.stderr.write("Empty data");
+	if( err ){
+		process.stderr.write(JSON.stringify(err));
 		process.exit(9);
 	}
 
-	try{
-		json_data = JSON.parse( data );
-	}
-	catch(e){
-		process.stderr.write("Invalid JSON data");
-		process.exit(9);
-	}
-
-	if( !Array.isArray( json_data ) ){
-		process.stderr.write("Array expected");
-		process.exit(9);
-	}
-
-	var db = new Datastore({filename: dbpath});
-
-	db.loadDatabase(function(err){
-
+	db.remove({_id: nodeid}, {}, function(err){
 		if( err ){
 			process.stderr.write(JSON.stringify(err));
 			process.exit(9);
 		}
-
-		db.remove({_id: nodeid}, {}, function(err){
-			if( err ){
-				process.stderr.write(JSON.stringify(err));
-				process.exit(9);
-			}
-		});
 	});
 });
