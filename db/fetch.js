@@ -1,9 +1,11 @@
 'use strict';
 
-var argv = require('minimist')(process.argv.slice(2));
+var argv = require("minimist")(process.argv.slice(2));
+var fs = require("fs");
 var Datastore = require("nedb");
 
 var dbpath = argv.path;
+var output = argv.output;
 
 if( !dbpath ){
 
@@ -27,6 +29,12 @@ db.loadDatabase(function(err){
 			process.exit(9);
 		}
 
-		process.stdout.write( JSON.stringify( doc ) );
+		if( !output ){
+			process.stdout.write( JSON.stringify( doc ) );
+		}
+		else{
+			fs.writeFileSync( output, JSON.stringify( doc ), {encoding: "utf8"} );
+		}
+
 	});
 });

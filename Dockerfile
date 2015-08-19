@@ -8,7 +8,6 @@ RUN pip install docker-compose
 COPY conf/* /etc/lighttpd/
 RUN adduser lighttpd users
 
-RUN mkdir /db
 COPY db /db/
 WORKDIR /db
 RUN npm install

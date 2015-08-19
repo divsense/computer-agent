@@ -61,7 +61,7 @@ process.stdin.on("end", function(){
 				process.exit(9);
 			}
 
-			db.update({_id: rec.id}, rec, {upsert:true}, function(err){
+			db.update({_id: rec._id}, rec, {upsert:true}, function(err){
 				if( err ){
 					process.stderr.write(JSON.stringify(err));
 					process.exit(9);
