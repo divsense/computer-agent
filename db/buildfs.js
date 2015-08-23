@@ -3,85 +3,96 @@
 var argv = require("minimist")(process.argv.slice(2));
 var fs = require("fs");
 var nsf = require("nsf");
-var Datastore = require("nedb");
 
-var dbpath = argv.path;
-var output = argv.output;
-var input = argv.input;
+var p_src = argv.src;
+var p_dest = argv.dest;
 
-if( !dbpath ){
+if( !p_src ){
 
-	process.stderr.write("Path parameter required");
+	process.stderr.write("Source (src) parameter required");
 	process.exit(9);
 
 }
 
-if( !output ){
+if( !p_dest ){
 
-	process.stderr.write("Output parameter required");
+	process.stderr.write("Destination (dest) parameter required");
 	process.exit(9);
 
 }
 
-if( !input ){
+process.stdin.setEncoding('utf8');
 
-	process.stderr.write("Input parameter required");
-	process.exit(9);
+var data = "";
 
-}
+process.stdin.on("readable", function(){
+	var chunk = process.stdin.read();
+	if( chunk ){
+		data += chunk;
+	}
+});
 
-var db = new Datastore({filename: dbpath});
+process.stdin.on("end", function(){
 
-db.loadDatabase(function(err){
+	var json_data;
 
-	var memo = ;
-	var acc = [];
-
-	if( err ){
-		process.stderr.write(JSON.stringify(err));
+	if( !data ){
+		process.stderr.write("Empty data");
 		process.exit(9);
 	}
 
-	db.find({}, function(err, doc){
-		if( err ){
-			process.stderr.write(JSON.stringify(err));
-			process.exit(9);
+	try{
+		json_data = JSON.parse( data );
+	}
+	catch(e){
+		process.stderr.write("Invalid JSON data");
+		process.exit(9);
+	}
+
+	var options = {
+		order: nsf.DEPTH_FIRST,
+
+		take: {
+			u: { type: {folder: true, doc: true} }
+		},
+		pass: { type:{ text: true} }
+	};
+
+	var acc = [];
+	var memo = 0;
+	var target_path;
+
+	nsf.traverse( json_data, options, function(err, node, level){
+
+					console.log("MEMO", memo);
+
+		if( level <= memo ){
+			acc = acc.slice(0, (acc.length - memo - level - 1));
 		}
 
-		var options = {
-			order: nsf.DEPTH_FIRST,
-			take: { u: { type: { folder: 1, doc: 1 } } } 
-		};
+		memo = level;
 
-		nsf.traverse( doc, options, function(err, node, level){
+		acc.push(node.t);
 
-			if( level <= memo ){
-				acc = acc.slice(0, (acc.length - memo - level - 1));
-			}
+					console.log("FILE", memo, level, node.t, acc);
 
-			memo = level;
-
-			acc.push(node.t);
-
-			if( nsf.has( "type", "folder", node.u ) ){
-				var path = [output].concat(acc).join("/");
-				fs.mkdirSync( path );
+		if( nsf.has( "type", "folder", node.u ) ){
+			target_path = [ __dirname, p_dest].concat(acc).join("/");
+			fs.mkdirSync( target_path );
+		}
+		else{
+			target_path  = [ __dirname, p_dest ].concat(acc).join("/");
+			var file_path = [ __dirname, p_src, node._id, "out" ].join("/");
+			var fd = fs.openSync( file_path, "r" );
+			if( typeof fd === "undefined" ){
+				process.stderr.write("File does not exist: " + file_path);
+				process.exit(9);
 			}
 			else{
-				var dest = [ __dirname, output ].concat(acc).join("/") + ".txt";
-				var src = [ __dirname, input, node._id, "out.txt" ].join("/");
-				fs.open( src, function( err, fd ){
-
-					if( err ){
-//                        process.exit(9);
-						console.log("File does not exists: " + src);
-					}
-					else{
-						fs.symlinkSync( src, dest );
-					}
-				});
+				fs.symlinkSync( file_path, target_path );
 			}
-		});
+		}
 	});
+
 });
 

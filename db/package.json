@@ -6,7 +6,11 @@
   "author": "Divsense",
   "license": "ISC",
   "dependencies": {
+    "minimist": "latest",
     "nedb": "latest",
-    "minimist": "latest"
-	}
+    "nsf": "0.0.3"
+  },
+  "devDependencies": {
+    "lodash.compose": "^2.4.1"
+  }
 }

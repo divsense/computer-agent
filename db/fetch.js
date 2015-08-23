@@ -4,8 +4,8 @@ var argv = require("minimist")(process.argv.slice(2));
 var fs = require("fs");
 var Datastore = require("nedb");
 
-var dbpath = argv.path;
-var output = argv.output;
+var dbpath = argv.db;
+var dest = argv.dest;
 
 if( !dbpath ){
 
@@ -29,11 +29,11 @@ db.loadDatabase(function(err){
 			process.exit(9);
 		}
 
-		if( !output ){
+		if( !dest ){
 			process.stdout.write( JSON.stringify( doc ) );
 		}
 		else{
-			fs.writeFileSync( output, JSON.stringify( doc ), {encoding: "utf8"} );
+			fs.writeFileSync( dest, JSON.stringify( doc ), {encoding: "utf8"} );
 		}
 
 	});
