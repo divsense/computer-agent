@@ -64,24 +64,21 @@ process.stdin.on("end", function(){
 
 	nsf.traverse( json_data, options, function(err, node, level){
 
-					console.log("MEMO", memo);
-
-		if( level <= memo ){
-			acc = acc.slice(0, (acc.length - memo - level - 1));
-		}
-
+		var diff = memo - level;
 		memo = level;
 
-		acc.push(node.t);
+		while( diff-- >= 0 ){
+			acc.pop();
+		}
 
-					console.log("FILE", memo, level, node.t, acc);
+		acc.push( node.t );
 
 		if( nsf.has( "type", "folder", node.u ) ){
-			target_path = [ __dirname, p_dest].concat(acc).join("/");
+			target_path = [ __dirname, p_dest].concat( acc ).join("/");
 			fs.mkdirSync( target_path );
 		}
 		else{
-			target_path  = [ __dirname, p_dest ].concat(acc).join("/");
+			target_path  = [ __dirname, p_dest ].concat( acc ).join("/");
 			var file_path = [ __dirname, p_src, node._id, "out" ].join("/");
 			var fd = fs.openSync( file_path, "r" );
 			if( typeof fd === "undefined" ){
